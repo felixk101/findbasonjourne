@@ -1,0 +1,110 @@
+<html>
+<head>
+  <title>Lol circles</title> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.5/pixi.js"></script>
+<style>* {padding: 0; margin: 0}</style>
+</head>
+
+<body>
+<script>
+
+let Application = PIXI.Application,
+    loader = PIXI.loader,
+    resources = PIXI.loader.resources,
+    Sprite = PIXI.Sprite;
+
+let type = "WebGL"
+if(!PIXI.utils.isWebGLSupported()){
+  type = "canvas"
+}
+
+PIXI.utils.sayHello(type)
+
+  
+//Create a Pixi Application
+let app = new Application({width: 256, height: 256});
+
+//Add the canvas that Pixi automatically created for you to the HTML document
+document.body.appendChild(app.view);
+app.renderer.view.style.position = "absolute";
+app.renderer.view.style.display = "block";
+app.renderer.autoResize = true;
+app.renderer.resize(window.innerWidth, window.innerHeight);
+
+loader
+  .add([
+    {name:"enemy", url:"Hamburglar.jpg"},
+    "smith.jpg"
+  ])
+  .load(setup);
+
+let hamburglar, buildings;
+let state;
+let agents = [];
+let MAX_VELOCITY = Math.sqrt(2);
+
+function distance(a, b) {
+  return Math.hypot(b.x-a.x, b.y-a.y)
+}
+
+function setup() {
+  //Create the sprite
+  let agentTexture = PIXI.utils.TextureCache["smith.jpg"];
+  hamburglar = new Sprite(PIXI.loader.resources["enemy"].texture);
+  for (let i = 0; i < 10; i++) {
+    let agent = new Sprite(agentTexture);
+    agent.x = i%3*30+i*30;
+    agent.y = i%4*25+i*10;
+
+    agent.vx = 0.25;
+    agent.vy = 0.1;
+
+    agent.width = 40;
+    agent.height = 40;
+
+    app.stage.addChild(agent);
+    agents.push(agent);
+  }
+  //building = new Sprite(PIXI.loader.resources["building.png"].texture);
+
+  //Change the sprite's position
+  hamburglar.x = 96;
+  hamburglar.y = 96;
+  hamburglar.vx = 0.5;
+  hamburglar.vy = 0.2;
+
+  hamburglar.width = 40;
+  hamburglar.height = 40;
+
+  //Add the cat to the stage so you can see it
+  app.stage.addChild(hamburglar);
+
+  //set the game state
+  state = play;
+
+  //Start the game loop by adding the `gameLoop` function to
+  //Pixi's `ticker` and providing it with a `delta` argument.
+  app.ticker.add(delta => gameLoop(delta));
+}
+
+function gameLoop(delta){
+
+  state(delta);
+}
+
+function play(delta) {
+  for (let agent of agents) {
+    if (agent == agents[0]) {
+      console.log("changing ",agent)
+    }
+    agent.x += agent.vx;
+    agent.y += agent.vy;
+  }
+  hamburglar.x += hamburglar.vx;
+  hamburglar.y += hamburglar.vy;
+
+}
+
+</script>
+</body>
+</htm>
