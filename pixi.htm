@@ -34,13 +34,15 @@ app.renderer.resize(window.innerWidth, window.innerHeight);
 loader
   .add([
     {name:"enemy", url:"Hamburglar.jpg"},
-    "smith.jpg"
+    "smith.jpg",
+    "building.png"
   ])
   .load(setup);
 
-let hamburglar, buildings;
+let hamburglar;
 let state;
 let agents = [];
+let buildings = [];
 let MAX_VELOCITY = Math.sqrt(2);
 
 function distance(a, b) {
@@ -50,7 +52,6 @@ function distance(a, b) {
 function setup() {
   //Create the sprite
   let agentTexture = PIXI.utils.TextureCache["smith.jpg"];
-  hamburglar = new Sprite(PIXI.loader.resources["enemy"].texture);
   for (let i = 0; i < 10; i++) {
     let agent = new Sprite(agentTexture);
     agent.x = i%3*30+i*30;
@@ -62,12 +63,50 @@ function setup() {
     agent.width = 40;
     agent.height = 40;
 
+    agent.canSee = function(target) {
+      return false;
+    }
+
+    agent.say = function(msg) {
+
+      let style = new PIXI.TextStyle({
+        fontFamily: "Arial",
+        fontSize: 13,
+        fill: "white",
+      });
+
+      let message = new PIXI.Text(msg, style);
+      app.stage.addChild(message);
+      message.position.set(agent.x-10, agent.y-30);
+      window.setTimeout(function() {
+        app.stage.removeChild(message)
+      }, 16);
+    }
+
     app.stage.addChild(agent);
     agents.push(agent);
   }
+  let buildingTexture = PIXI.utils.TextureCache["building.png"];
+  for (let x = 40; x < app.renderer.view.width; x += 160) {
+    for (let y = 40; y < app.renderer.view.height; y += 160) {
+      if (x % Math.floor(Math.random() * Math.floor(177)) != 0) {
+        let building = new Sprite(buildingTexture);
+        building.x = x;
+        building.y = y;
+
+        app.stage.addChild(building);
+
+        buildings.push(building);
+
+      }
+      
+    }
+  }
+
+  hamburglar = new Sprite(PIXI.loader.resources["enemy"].texture);
+
   //building = new Sprite(PIXI.loader.resources["building.png"].texture);
 
-  //Change the sprite's position
   hamburglar.x = 96;
   hamburglar.y = 96;
   hamburglar.vx = 0.5;
@@ -82,8 +121,6 @@ function setup() {
   //set the game state
   state = play;
 
-  //Start the game loop by adding the `gameLoop` function to
-  //Pixi's `ticker` and providing it with a `delta` argument.
   app.ticker.add(delta => gameLoop(delta));
 }
 
@@ -94,9 +131,22 @@ function gameLoop(delta){
 
 function play(delta) {
   for (let agent of agents) {
+
     if (agent == agents[0]) {
-      console.log("changing ",agent)
+      agent.say("searching");
     }
+
+    if (agent.canSee(hamburglar)) {
+      //agent.shoot(hamburglar)
+    } else {
+      //agent.say("Where did he go?");
+    }
+
+    for (let building of buildings) {
+      //hitTestRectangle(spriteOne, spriteTwo)
+    }
+
+
     agent.x += agent.vx;
     agent.y += agent.vy;
   }
